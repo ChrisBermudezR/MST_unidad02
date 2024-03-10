@@ -14,7 +14,7 @@ prueba <- function(intentos) {
   resultado <- (x - 0.5)^2 + (y - 0.5)^2 < 0.25
   
   # Conteo de intentos correctos (dentro del círculo)
-  n_intentos_correctos <- sum(resultado)
+  n_intentos_correctos <- base::sum(resultado)
   
   # Estimación de pi usando el número de intentos correctos
   pi <- (n_intentos_correctos / intentos) * 4
