@@ -1,0 +1,105 @@
+---
+title: "Estimación Boostrap"
+subtitle: |
+  | Pontificia Universidad Javeriana
+  | Maestría en Ciencia de Datos
+  | Métodos y Simulación  Estadísticos - A
+author: |
+  | Christian Bermúdez Rivas
+  | David Aguilar
+date: "2024-03-19"
+bibliography: Bibliografia01.bib  
+output: 
+  html_document:
+    toc: true
+    toc_depth: 3
+    toc_float: 
+        collapsed: true
+        smooth_scroll: false
+    number_sections: true
+    theme: default
+    code_folding: hide
+---
+# Intervalos de confianza usando estimación bootstrap
+
+Cuando se extrae una muestra de una población que no es normal, y se requiere un intervalo de confianza, se pueden utilizar los métodos basados en la estimación *bootstrap* [@Navidi2006]. Existen muchos de estos métodos; aquí se presenta uno simple y se muestra cómo utilizarlo para construir un intervalo
+de confianza para una media poblacional.
+
+Se considerará el siguiente ejemplo. El artículo “*In-use Emissions from Heavy Duty Diesel Vehicles*” (J. Yanowitz, tesis de doctorado, Escuela de Minas, de Colorado, 2001) presenta mediciones de eficiencia del combustible (en milla/galón) de una muestra de siete camiones. Los datos son los siguientes:
+
+$$7.69\ 4.97\ 4.56\ 6.49\ 4.34\ 6.24\ 4.45$$
+
+Se supone que ésta es una muestra aleatoria de una población de camiones, y que se desea construir un intervalo de confianza de $95%$ para la media m de la eficiencia de combustible de esta población. Al observar la muestra se sugiere que hay una separación cerca de la mitad de la distribución, ya que no hay ningún camión en la muestra con valores entre 5 y 6.
+
+Por tanto, no se podría suponer que los datos fueran normales. La estimación *bootstrap* proporciona un método para construir un intervalo de confianza, cuyo nivel será aproximadamente de 95% (o cualquier otro valor que se podría especificar).
+
+Para construir un intervalo de confianza de estimación *bootstrap*, se deben extraer muestras de estimación *bootstrap* de los datos. Una muestra de estimación *bootstrap* es del mismo tamaño que los datos, extraída con reemplazo. Para describir esto último con detalle, se denotan los valores en una muestra aleatoria por $X_{1},..., X_{n}$. Imagine colocar estos valores en una caja y extraer uno al azar. Éste sería el primer valor de la muestra de estimación *bootstrap*; se le denota con $X_{1}^*$. Después se regresa a $X_{1}^*$ a la caja y se extrae otro valor, $X_{2}^*$. Se continúa de este modo hasta que se ha extraído $n$ valores$X_{1}^*,..., X_{n}^*$. Ésta es una muestra de estimación *bootstrap.* Observe que cada valor en la muestra de estimación *bootstrap* se ha extraído de la muestra de datos completa, por lo que es probable que algunos valores aparecerán más de una vez mientras que otros no lo harán.
+
+Se extrajeron mil muestras por estimación bootstrap de los datos específicos
+del millaje. Los primeros diez y el último de éstos se presentan en la tabla 5.2. La media muestral se calcula para cada muestra de estimación bootstrap.
+
+
+| Muestra|Valores de la muestra|Media muestral |
+|:------:|:----------------------:|:---------------:|
+| 1      | 4.97 6.49 7.69 4.97 7.69 4.56 4.45| 5.8314|
+| 2      | 6.24 4.97 4.56 4.97 4.56 6.24 7.69| 5.6043|
+| 3      | 4.34 4.45 4.56 4.45 6.24 4.97 4.34| 4.7643|
+| 4      | 4.45 6.49 7.69 6.24 4.97 4.45 4.34| 5.5186|
+| 5      | 6.24 4.34 4.45 7.69 4.56 4.34 4.45| 5.1529|
+| 6      | 4.34 4.97 7.69 4.97 6.24 6.24 6.24| 5.8129|
+| 7      | 4.45 6.49 6.24 4.97 4.34 7.69 4.34| 5.5029|
+| 8      | 6.49 7.69 4.97 6.49 6.49 4.34 4.56| 5.8614|
+| 9      | 7.69 4.45 4.45 4.45 4.45 4.56 4.56| 4.9443|
+| 10     | 6.24 4.56 4.97 6.49 4.45 4.97 6.24| 5.4171|
+|.|.|.|
+|.|.|.|
+|.|.|.|
+| 1 000| 4.34 7.69 4.45 4.56 7.69 4.45 7.69| 5.8386|
+
+
+
+Para construir un intervalo de confianza de estimación *bootstrap*, se deben extraer muchas muestras de estimación *bootstrap* (mil como mínimo). Debido a que se quiere un intervalo de confianza para la media m poblacional, se calcula la media muestral para cada muestra de estimación *bootstrap.* Sea $\bar{X}_{i}^*$ la media de la $i$-ésima muestra de estimación *bootstrap.* Debido
+a que se quiere que el nivel del intervalo de confianza esté tan cerca de 95% como sea posible, se determina el intervalo que contiene a 95% del intermedio de las medias muestrales de estimación *bootstrap.* Los puntos finales de este intervalo son 2.5 percentil y 97.5 percentil de la lista de las medias de estimación *bootstrap.* Se denotan estos percentiles por $\bar{X}_{.025}^*$ y $\bar{X}_{.975}^*$, respectivamente.
+
+Se calcularon estos percentiles para los datos del millaje. Las siguientes son las 26 más grandes de las mil muestras de estimación *bootstrap*  $\bar{X}_{i}^*$. 
+
+26 más pequeñas:
+
+$4.4929\ 4.4971\ 4.5357\ 4.5400\ 4.5514\ 4.5557\ 4.5557\ 4.5829\\
+4.5986\ 4.6143\ 4.6429\ 4.6457\ 4.6729\ 4.6729\ 4.6900\ 4.6943\\
+4.7014\ 4.7157\ 4.7257\ 4.7257\ 4.7329\ 4.7371\ 4.7414\ 4.7486\\
+4.7643\ 4.7643\\$
+
+26 más grandes:
+
+$6.4757\ 6.4757\ 6.4800\ 6.4900\ 6.4986\ 6.5214\ 6.5443\ 6.5543\\
+6.5929\ 6.5929\ 6.6257\ 6.6257\ 6.6471\ 6.6671\ 6.6900\ 6.6929\\
+6.7057\ 6.7129\ 6.7514\ 6.7971\ 6.7971\ 6.8486\ 6.9329\ 6.9686\\
+7.0714\ 7.104\\$
+
+Utilizando el método del cálculo de percentiles presentado en el capítulo, el percentil
+2.5 es el promedio de los 25o. y 26o. valores en la muestra ordenada de mil, y el percentil
+97.5 es el promedio de los valores 975o. y 976o. Por tanto, en este caso X
+–
+*
+–
+*
+ 4.7643 y X
+.025
+ 6.4757.
+.975
+
+```{r Figura_1, fig.height=9, fig.width=9, fig.align='center', fig.cap="Figura 1. 100 puntos aleatorios"}
+x=c( 7.69, 4.97, 4.56, 6.49, 4.34, 6.24, 4.45) # datos muestra
+boot=sample(x,7000,replace=TRUE)   # se extraen n x m muestras
+b=matrix(boot,nrow=1000,ncol=7)    # se construye matriz de n x m 
+mx=apply(b,1,mean)    
+
+ic1=quantile(mx, probs=c(0.025, 0.975)) # se calcula IC método 1
+print(ic1)# se calculan m medias por fila
+ic2=c(2*mean(mx)-ic1[2], 2*mean(mx)-ic1[1]) # se calcula IC método 2
+ic2
+hist(mx, las=1, main=" ", ylab = " ", xlab = " ", col="#034A94")
+abline(v=ic1, col="#FF7F00",lwd=2)
+abline(v=ic2, col="#0EB0C6",lwd=2)
+```

@@ -1,0 +1,306 @@
+---
+title: "Estimación del valor π"
+subtitle: |
+  | Pontificia Universidad Javeriana
+  | Maestría en Ciencia de Datos
+  | Métodos y Simulación  Estadísticos - A
+author: |
+  | Christian Bermúdez Rivas
+  | David Aguilar
+date: "2024-03-19"
+bibliography: Bibliografia01.bib  
+output: 
+  html_document:
+    toc: true
+    toc_depth: 3
+    toc_float: 
+        collapsed: true
+        smooth_scroll: false
+    number_sections: true
+    theme: default
+    code_folding: hide
+---
+
+
+# Planteamiento del problema
+
+La figura 1 sugiere cómo estimar el valor de π con una simulación. En la figura, un círculo con un área igual a π/4 está inscrito en un cuadrado cuya área es igual a $1$. Se elige de forma aleatoria $100$ puntos dentro del cuadrado. La probabilidad de que un punto esté dentro del círculo es igual a la fracción del área del cuadrado que abarca a éste, la cual es $π/4$. Por tanto, se puede estimar el valor de $π/4$ al contar el número de puntos dentro del círculo, que es 79, y al dividir entre el número total de puntos, que es 100, para obtener la estimación $π/4 \approx 0.79$.
+
+De esto último se concluye que $π \approx 4(0.79) =3.16$. Este ejercicio  [@Navidi2006] presenta un experimento de simulación que fue diseñado para estimar el valor de $π$ al generar $1 000$ puntos en el cuadrado.
+
+```{r Figura_1, fig.height=9, fig.width=9, fig.align='center', fig.cap="Figura 1. 100 puntos aleatorios"}
+library("plotrix")
+set.seed(123)
+x = runif(0, 0, 1)
+y = runif(0, 0, 1)
+x_circulos <- runif(100, 0, 1)
+y_circulos <- runif(100, 0, 1)
+plot(x, y, asp = 1, xlim = c(0.0, 1),  ylim = c(0.0, 1),col="black", yaxs = "i",  xaxs = "i")
+points(x_circulos, y_circulos, pch = 21, bg = "black", cex = 0.8)
+#abline(v=1, col="black")
+#abline(v=0, col="black")
+draw.circle(0.5, 0.5, 0.5, nv = 1000, border = NULL, col = NA, lty = 1, lwd = 1)
+```
+
+# Enunciado 1
+
+  a). Genere 1 000 coordenadas $x X_{i}^*, ..., X_{1000}^*$. Utilice la distribución uniforme con valor mínimo de 0 y valor máximo de 1. La distribución      uniforme genera variables aleatorias que tienen la misma probabilidad de venir de cualquier parte del intervalo $(0, 1)$.
+  
+```{r Figura_2, fig.height=4.5, fig.width=9, fig.align='center', fig.cap="Figura 2. 1000 puntos aleatorios"}
+set.seed(123)
+# Definición de la función de prueba
+generador <- function(intentos) {
+  # Generación de números aleatorios para coordenadas x e y
+  assign("x", runif(intentos, min = 0, max = 1), envir = .GlobalEnv)
+ 
+}
+
+# Ejecución de la función de prueba para diferentes números de intentos
+generador(1000)
+
+densidadx <-density(x)
+
+
+par(mfrow=c(1,2))
+hist(x, main="Histrograma de x", xlab="valores de x")
+
+plot(densidadx, main="Densidad de x", xlab = "Valor", ylab = "Densidad")
+
+
+
+```
+
+# Enunciado 2
+
+  b). Genere 1 000 coordenadas $y Y_{i}^*, ..., Y_{1000}^*$, utilizando nuevamente la distribución uniforme con valor mínimo de 0 y valor máximo de     $1$.
+  
+  
+```{r Figura_3, fig.height=4.5, fig.width=9, fig.align='center', fig.cap="Figura 3. 1000 puntos aleatorios"}
+set.seed(123)
+
+
+# Definición de la función de prueba
+generador <- function(intentos) {
+  # Generación de números aleatorios para coordenadas x e y
+  assign("y", runif(intentos, min = 0, max = 1), envir = .GlobalEnv)
+}
+
+# Ejecución de la función de prueba para diferentes números de intentos
+generador(1000)
+
+
+densidady<- density(y)
+
+par(mfrow=c(1,2))
+
+hist(y, main="Histrograma de y", xlab="valores de y")
+
+plot(densidady, main="Densidad de y", xlab = "Valor", ylab = "Densidad")
+
+
+```
+# Enunciado 3
+
+
+  c). Cada punto $(X_{i}^* , Y_{i}^* )$ se encuentra dentro del círculo si su distancia desde el centro $(0.5, 0.5)$ es menor a $0.5$. Para cada par $(X_{i}^* , Y_{i}^* )$  determine si la distancia desde el centro es menor a $0.5$. Esto último se puede realizar al calcular el valor $(X_{i}^* - 0.5)^2 + (Y_{i}^* - 0.5)^2$ que es el cuadrado de la    distancia, y al determinar si es menor que $0.25$.
+  
+```{r simulacion100, fig.height=9, fig.width=9, fig.align='center', fig.cap=""}
+library("plotrix")
+set.seed(123)
+conteo <- function(intentos) {
+  # Generación de números aleatorios para coordenadas x e y
+  assign("x", runif(intentos, min = 0, max = 1), envir = .GlobalEnv)
+  assign("y", runif(intentos, min = 0, max = 1), envir = .GlobalEnv)
+  
+ # Comprobación de si los puntos caen dentro del círculo unitario centrado en (0.5, 0.5)
+    assign("dentro", (x - 0.5)^2 + (y - 0.5)^2 < 0.25, envir = .GlobalEnv)
+   
+  
+  # Conteo de intentos correctos (dentro del círculo)
+       assign("n_intentos_correctos", sum(dentro), envir = .GlobalEnv)
+
+  
+  # Almacenar los valores dentro y fuera del círculo
+  assign("puntos", data.frame(x, y), envir = .GlobalEnv)
+    assign("puntos_dentro", puntos[dentro, ], envir = .GlobalEnv)
+      assign("puntos_fuera", puntos[!dentro, ], envir = .GlobalEnv)
+ 
+
+  
+  # Imprimir la cantidad de intentos correctos y devolver los puntos dentro y fuera del círculo
+  print(paste("El número de puntos cuya distancia es menor a 0.5 para esta simulación de", intentos, "puntos es de ",n_intentos_correctos))
+  
+}
+conteo(100)
+#print(list(dentro = puntos_dentro, fuera = puntos_fuera))
+
+```
+# Enunciado 4
+
+  d). ¿Cuántos de los puntos están dentro del círculo? ¿Cuál es su estimación de $π$? (Nota: Con sólo $1 000$ puntos, es probable que su estimación sea inferior por $0.05$ o más. Una simulación con $10 000$ y $100 000$ puntos tiene mayores probabilidades de dar como resultado una estimación muy cercana al valor verdadero.
+  
+
+## Estimación para 1000 puntos.
+  
+```{r Figura_4, fig.height=9, fig.width=9, fig.align='center', fig.cap="Figura 4. 1000 puntos aleatorios"}
+library("plotrix")
+set.seed(123)
+simulacion <- function(intentos) {
+  # Generación de números aleatorios para coordenadas x e y
+  assign("x", runif(intentos, min = 0, max = 1), envir = .GlobalEnv)
+  assign("y", runif(intentos, min = 0, max = 1), envir = .GlobalEnv)
+  
+ # Comprobación de si los puntos caen dentro del círculo unitario centrado en (0.5, 0.5)
+    assign("dentro", (x - 0.5)^2 + (y - 0.5)^2 < 0.25, envir = .GlobalEnv)
+   
+  
+  # Conteo de intentos correctos (dentro del círculo)
+       assign("n_intentos_correctos", sum(dentro), envir = .GlobalEnv)
+
+  
+  # Almacenar los valores dentro y fuera del círculo
+  assign("puntos", data.frame(x, y), envir = .GlobalEnv)
+    assign("puntos_dentro", puntos[dentro, ], envir = .GlobalEnv)
+      assign("puntos_fuera", puntos[!dentro, ], envir = .GlobalEnv)
+ 
+
+       # Conteo de intentos correctos (dentro del círculo)
+  
+  
+  # Estimación de pi usando el número de intentos correctos
+       assign("pi_estimada", (n_intentos_correctos / intentos) * 4, envir = .GlobalEnv)
+
+  
+  # Impresión del valor estimado de pi
+
+  
+  # Imprimir la cantidad de intentos correctos y devolver los puntos dentro y fuera del círculo
+  print(paste("El número de puntos dentro del círculo para esta simulación de", intentos, "es de",n_intentos_correctos))
+  
+}
+simulacion(1000)
+#print(list(dentro = puntos_dentro, fuera = puntos_fuera))
+
+plot(0,0,asp = 1, xlim = c(0, 1),  ylim = c(0, 1),col="white", xlab="x", ylab="y" , yaxs = "i",  xaxs = "i")
+points(puntos_dentro, pch = 21, bg = "red", cex = 0.8, lwd=0.1, col="red")
+points(puntos_fuera, pch = 21, bg = "black", cex = 0.8)
+#abline(v=1, col="black")
+#abline(v=0, col="black")
+draw.circle(0.5, 0.5, 0.5, nv = 1000, border = NULL, col = NA, lty = 1, lwd = 1)
+
+
+#Estimación de pi
+  print(paste("La estimación de pi para", 1000, "es de:",pi_estimada))
+  
+  print(paste("La diferencia entre la estimación de pi y el número pi es de", pi_estimada-pi))
+
+```
+## Estimación para 10 000 puntos.
+
+```{r Figura_5, fig.height=9, fig.width=9, fig.align='center', fig.cap="Figura 5. 10000 puntos aleatorios"}
+library("plotrix")
+set.seed(123)
+simulacion <- function(intentos) {
+  # Generación de números aleatorios para coordenadas x e y
+  assign("x", runif(intentos, min = 0, max = 1), envir = .GlobalEnv)
+  assign("y", runif(intentos, min = 0, max = 1), envir = .GlobalEnv)
+  
+ # Comprobación de si los puntos caen dentro del círculo unitario centrado en (0.5, 0.5)
+    assign("dentro", (x - 0.5)^2 + (y - 0.5)^2 < 0.25, envir = .GlobalEnv)
+   
+  
+  # Conteo de intentos correctos (dentro del círculo)
+       assign("n_intentos_correctos", sum(dentro), envir = .GlobalEnv)
+
+  
+  # Almacenar los valores dentro y fuera del círculo
+  assign("puntos", data.frame(x, y), envir = .GlobalEnv)
+    assign("puntos_dentro", puntos[dentro, ], envir = .GlobalEnv)
+      assign("puntos_fuera", puntos[!dentro, ], envir = .GlobalEnv)
+ 
+
+       # Conteo de intentos correctos (dentro del círculo)
+  
+  
+  # Estimación de pi usando el número de intentos correctos
+       assign("pi_estimada", (n_intentos_correctos / intentos) * 4, envir = .GlobalEnv)
+  
+  # Impresión del valor estimado de pi
+
+  
+  # Imprimir la cantidad de intentos correctos y devolver los puntos dentro y fuera del círculo
+    print(paste("El número de puntos dentro del círculo para esta simulación de", intentos, "es de",n_intentos_correctos))
+  
+}
+simulacion(10000)
+#print(list(dentro = puntos_dentro, fuera = puntos_fuera))
+
+plot(0,0,asp = 1, xlim = c(0, 1),  ylim = c(0, 1),col="white", xlab="x", ylab="y" , yaxs = "i",  xaxs = "i")
+points(puntos_dentro, pch = 21, bg = "red", cex = 0.8, lwd=0.1, col="red")
+points(puntos_fuera, pch = 21, bg = "black", cex = 0.8)
+#abline(v=1, col="black")
+#abline(v=0, col="black")
+draw.circle(0.5, 0.5, 0.5, nv = 1000, border = NULL, col = NA, lty = 1, lwd = 1)
+
+
+#Estimación de pi
+  print(paste("La estimación de pi para", 10000, "es de:",pi_estimada))
+    print(paste("La diferencia entre la estimación de pi y el número pi es de",pi_estimada-pi))
+
+```
+
+## Estimación de 100 000 puntos
+
+```{r Figura_6, fig.height=9, fig.width=9, fig.align='center', fig.cap="Figura 6. 100000 puntos aleatorios"}
+library("plotrix")
+set.seed(123)
+simulacion <- function(intentos) {
+  # Generación de números aleatorios para coordenadas x e y
+  assign("x", runif(intentos, min = 0, max = 1), envir = .GlobalEnv)
+  assign("y", runif(intentos, min = 0, max = 1), envir = .GlobalEnv)
+  
+ # Comprobación de si los puntos caen dentro del círculo unitario centrado en (0.5, 0.5)
+    assign("dentro", (x - 0.5)^2 + (y - 0.5)^2 < 0.25, envir = .GlobalEnv)
+   
+  
+  # Conteo de intentos correctos (dentro del círculo)
+       assign("n_intentos_correctos", sum(dentro), envir = .GlobalEnv)
+
+  
+  # Almacenar los valores dentro y fuera del círculo
+  assign("puntos", data.frame(x, y), envir = .GlobalEnv)
+    assign("puntos_dentro", puntos[dentro, ], envir = .GlobalEnv)
+      assign("puntos_fuera", puntos[!dentro, ], envir = .GlobalEnv)
+ 
+
+       # Conteo de intentos correctos (dentro del círculo)
+  
+  
+  # Estimación de pi usando el número de intentos correctos
+   assign("pi_estimada", (n_intentos_correctos / intentos) * 4, envir = .GlobalEnv)
+  
+  # Impresión del valor estimado de pi
+options(scipen=9999)
+  
+  # Imprimir la cantidad de intentos correctos y devolver los puntos dentro y fuera del círculo
+    print(paste("El número de puntos dentro del círculo para esta simulación de", intentos, "es de",n_intentos_correctos))
+  
+}
+simulacion(100000)
+#print(list(dentro = puntos_dentro, fuera = puntos_fuera))
+
+plot(0,0,asp = 1, xlim = c(0, 1),  ylim = c(0, 1),col="white", xlab="x", ylab="y" , yaxs = "i",  xaxs = "i")
+points(puntos_dentro, pch = 21, bg = "red", cex = 0.8, lwd=0.1, col="red")
+points(puntos_fuera, pch = 21, bg = "black", cex = 0.8)
+#abline(v=1, col="black")
+#abline(v=0, col="black")
+draw.circle(0.5, 0.5, 0.5, nv = 1000, border = NULL, col = NA, lty = 1, lwd = 1)
+
+#Elimina la notación científica
+options(scipen=9999)
+#Estimación de pi
+  print(paste("La estimación de pi para", 100000, "es de:",pi_estimada))
+    print(paste("La diferencia entre la estimación de pi y el número pi es de", pi_estimada-pi))
+
+```
+# Referencias
