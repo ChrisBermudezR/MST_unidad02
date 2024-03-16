@@ -1,0 +1,439 @@
+---
+title: "Métodos y simulación estadística Actividad 2 - Caso propiedades de los estimadores: Ejercicio 2"
+author: "David Aguilar y Christian Bermúdez."
+date: "10/03/2024"
+
+output:
+  html_document:
+    toc: yes
+    toc_depth: 3
+    toc_float: yes
+    number_sections: yes
+    df_print: paged
+    highlight: pygments
+    theme: readable
+  pdf_document:
+    toc: yes
+    toc_depth: '3'
+always_allow_html: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+#definir directorio
+setwd("C:/Users/doar9/OneDrive/Javeriana/Metodos") 
+```
+
+**Nota: Documento académico para la Maestría en ciencia de datos de la Universidad Javeriana de Cali**
+
+# Enunciado
+
+<p style="font-family: Tahoma; color: #00B288; font-weight: bold;">
+
+Sean $X_1$, $X_2$, $X_3$ y $X_4$, una muestra aleatoria de tamaño n=4 cuya población la conforma una distribución exponencial con parámetro $θ$ desconocido. Determine las características de cada uno de los siguientes estimadores propuestos:
+
+$$
+\hat{\theta}_1 = \frac{X_1 + X_2}{6} + \frac{X_3 + X_4}{3}
+$$
+
+$$
+\hat{\theta}_2 = \frac{X_1 + 2X_2 + 3X_3 + 4X_4}{5}
+$$
+
+$$
+\hat{\theta}_3 = \frac{X_1 + X_2 + X_3 + X_4}{4}
+$$
+
+$$
+\hat{\theta}_4 = \frac{\min\{X_1, X_2, X_3, X_4\} + \max\{X_1, X_2, X_3, X_4\}}{2}
+$$
+
+# Respuesta
+
+</p>
+
+<p style="font-family: Tahoma; color: #000000; font-weight: bold;">
+
+Respuesta:
+
+</p>
+
+<p style="font-family: Tahoma; color: #000000;">
+
+Se utiliza el comando rexp para una distribución binomial para seleccionar 4 datos aleatorios
+
+</p>
+
+```{r}
+
+#Genero la matriz con 4 datos aleatorios provenientes de una función exponencial con tasa 1
+n=1000   #  numero de columnas (tamaño máximo de muestra)
+m=4*n #porque necesito cuatro valores
+X=matrix(rexp(m,1),ncol=n) 
+```
+
+*Definimos la función para calcular los estimadores*
+
+```{r}
+
+# Función para calcular los estimadores para una columna
+calcular_los_estimadores <- function(column) {
+  estimador_1 <- (column[1] + column[2]) / 6 + (column[3] + column[4]) / 3
+  estimador_2 <- (column[1] + 2 * column[2] + 3 * column[3] + 4 * column[4]) / 5
+  estimador_3 <- sum(column[1:4]) / 4
+  estimador_4 <- (min(column[1:4]) + max(column[1:4])) / 2
+  return(c(estimador_1, estimador_2, estimador_3, estimador_4))
+}
+```
+
+## caso n = 20
+
+Se toman 20 resultados de cada estimador
+
+```{r}
+# Extraemos las primeras n columnas
+X20 <- X[, 1:20]
+
+# Aplicamos la función a cada columna de X20
+estimadores <- apply(X20, 2, calcular_los_estimadores) #l 2 es porque tomo columna, 1 sería fila
+
+# Convertimos el resultado en un data.frame
+estimadores_en_df <- data.frame(t(estimadores)) #los voltea y vuelve cada resultado una variable
+colnames(estimadores_en_df) <- c('estimador_1', 'estimador_2', 'estimador_3', 'estimador_4')
+
+estimadores_en_df
+```
+
+*Distribución de los datos en un boxplot*
+
+```{r}
+boxplot(estimadores_en_df, las=1, main="Comparacion estimadores con n=20") 
+abline(h=1,  col="red")   
+```
+
+*Media y desviación estándar de los estimadores*
+
+```{r}
+#Media
+medias <- apply(estimadores_en_df,2,mean) 
+
+print(medias)
+
+#Grafiquito medias
+barplot(medias, 
+        main = "Media de Estimadores", 
+        xlab = "Estimadores", 
+        ylab = "Media", 
+        col = "#00B4E3",
+        names.arg = colnames(estimadores_en_df))
+
+
+#Desviación estándar
+devest <- apply(estimadores_en_df,2,sd) 
+
+print(devest)
+
+barplot(devest, 
+        main = "Desviación Estándar de Estimadores", 
+        xlab = "Estimadores", 
+        ylab = "Desviación Estándar", 
+        col = "#00B288",
+        names.arg = colnames(estimadores_en_df))
+```
+
+<p>
+
+Sobre el sesgo vamos a comparar la diferencia entre el valor esperado del estimador theta y el valor verdadero del parámetro, se selecciona el valor de 1 como el valor que debería tomar los estimadores
+
+$B(\hat{\theta}) = E(\hat{\theta}) - \theta$
+
+A continuación, se mira la diferencia (o sesgo) para cada grupo de medias.
+
+</p>
+
+```{r}
+medias <- apply(estimadores_en_df, 2, mean)
+# El valor del parámetro es 1
+theta <- 1
+
+# Calculamos el sesgo para cada estimador
+sesgos <- medias - theta
+
+# Ahora graficamos los sesgos en una gráfica de barras
+plotsesgos <- barplot(sesgos, 
+        main = "Sesgo de Estimadores", 
+        xlab = "Estimadores", 
+        ylab = "Sesgo", 
+        col = "blue",
+        names.arg = c("Estimador 1", "Estimador 2", "Estimador 3", "Estimador 4"))
+
+
+# Agregar etiquetas 
+text(x = plotsesgos, y = sesgos, label = round(sesgos, 2), pos = 3, cex = 0.8, col = "red")
+```
+
+
+## caso n = 50
+
+Se toman 50 resultados de cada estimador
+
+```{r}
+# Extraemos las primeras n columnas
+X50 <- X[, 1:50]
+
+# Aplicamos la función a cada columna de X20
+estimadores <- apply(X50, 2, calcular_los_estimadores) #l 2 es porque tomo columna, 1 sería fila
+
+# Convertimos el resultado en un data.frame
+estimadores_en_df <- data.frame(t(estimadores)) #los voltea y vuelve cada resultado una variable
+colnames(estimadores_en_df) <- c('estimador_1', 'estimador_2', 'estimador_3', 'estimador_4')
+
+estimadores_en_df
+```
+
+*Distribución de los datos en un boxplot*
+
+```{r}
+boxplot(estimadores_en_df, las=1, main="Comparacion estimadores con n=50") 
+abline(h=1,  col="red")   
+```
+
+*Media y desviación estándar de los estimadores*
+
+```{r}
+#Media
+medias <- apply(estimadores_en_df,2,mean) 
+
+print(medias)
+
+#Grafiquito medias
+barplot(medias, 
+        main = "Media de Estimadores", 
+        xlab = "Estimadores", 
+        ylab = "Media", 
+        col = "#00B4E3",
+        names.arg = colnames(estimadores_en_df))
+
+
+#Desviación estándar
+devest <- apply(estimadores_en_df,2,sd) 
+
+print(devest)
+
+barplot(devest, 
+        main = "Desviación Estándar de Estimadores", 
+        xlab = "Estimadores", 
+        ylab = "Desviación Estándar", 
+        col = "#00B288",
+        names.arg = colnames(estimadores_en_df))
+```
+
+<p>
+
+Sobre el sesgo vamos a comparar la diferencia entre el valor esperado del estimador theta y el valor verdadero del parámetro, se selecciona el valor de 1 como el valor que debería tomar los estimadores
+
+$B(\hat{\theta}) = E(\hat{\theta}) - \theta$
+
+A continuación, se mira la diferencia (o sesgo) para cada grupo de medias.
+
+</p>
+
+```{r}
+medias <- apply(estimadores_en_df, 2, mean)
+# El valor del parámetro es 1
+theta <- 1
+
+# Calculamos el sesgo para cada estimador
+sesgos <- medias - theta
+
+# Ahora graficamos los sesgos en una gráfica de barras
+plotsesgos <- barplot(sesgos, 
+        main = "Sesgo de Estimadores", 
+        xlab = "Estimadores", 
+        ylab = "Sesgo", 
+        col = "blue",
+        names.arg = c("Estimador 1", "Estimador 2", "Estimador 3", "Estimador 4"))
+
+
+# Agregar etiquetas 
+text(x = plotsesgos, y = sesgos, label = round(sesgos, 2), pos = 3, cex = 0.8, col = "red")
+```
+
+## caso n = 100
+
+Se toman 100 resultados de cada estimador
+
+```{r}
+# Extraemos las primeras n columnas
+X100 <- X[, 1:100]
+
+# Aplicamos la función a cada columna de X20
+estimadores <- apply(X100, 2, calcular_los_estimadores) #l 2 es porque tomo columna, 1 sería fila
+
+# Convertimos el resultado en un data.frame
+estimadores_en_df <- data.frame(t(estimadores)) #los voltea y vuelve cada resultado una variable
+colnames(estimadores_en_df) <- c('estimador_1', 'estimador_2', 'estimador_3', 'estimador_4')
+
+estimadores_en_df
+```
+
+*Distribución de los datos en un boxplot*
+
+```{r}
+boxplot(estimadores_en_df, las=1, main="Comparacion estimadores con n=100") 
+abline(h=1,  col="red")   
+```
+
+*Media y desviación estándar de los estimadores*
+
+```{r}
+#Media
+medias <- apply(estimadores_en_df,2,mean) 
+
+print(medias)
+
+#Grafiquito medias
+barplot(medias, 
+        main = "Media de Estimadores", 
+        xlab = "Estimadores", 
+        ylab = "Media", 
+        col = "#00B4E3",
+        names.arg = colnames(estimadores_en_df))
+
+
+#Desviación estándar
+devest <- apply(estimadores_en_df,2,sd) 
+
+print(devest)
+
+barplot(devest, 
+        main = "Desviación Estándar de Estimadores", 
+        xlab = "Estimadores", 
+        ylab = "Desviación Estándar", 
+        col = "#00B288",
+        names.arg = colnames(estimadores_en_df))
+```
+
+<p>
+
+Sobre el sesgo vamos a comparar la diferencia entre el valor esperado del estimador theta y el valor verdadero del parámetro, se selecciona el valor de 1 como el valor que debería tomar los estimadores
+
+$B(\hat{\theta}) = E(\hat{\theta}) - \theta$
+
+A continuación, se mira la diferencia (o sesgo) para cada grupo de medias.
+
+</p>
+
+```{r}
+medias <- apply(estimadores_en_df, 2, mean)
+# El valor del parámetro es 1
+theta <- 1
+
+# Calculamos el sesgo para cada estimador
+sesgos <- medias - theta
+
+# Ahora graficamos los sesgos en una gráfica de barras
+plotsesgos <- barplot(sesgos, 
+        main = "Sesgo de Estimadores", 
+        xlab = "Estimadores", 
+        ylab = "Sesgo", 
+        col = "blue",
+        names.arg = c("Estimador 1", "Estimador 2", "Estimador 3", "Estimador 4"))
+
+
+# Agregar etiquetas 
+text(x = plotsesgos, y = sesgos, label = round(sesgos, 2), pos = 3, cex = 0.8, col = "red")
+```
+
+
+## caso n = 1000
+
+Se toman 100 resultados de cada estimador
+
+```{r}
+# Extraemos las primeras n columnas
+X1000 <- X[, 1:1000]
+
+# Aplicamos la función a cada columna de X20
+estimadores <- apply(X1000, 2, calcular_los_estimadores) #l 2 es porque tomo columna, 1 sería fila
+
+# Convertimos el resultado en un data.frame
+estimadores_en_df <- data.frame(t(estimadores)) #los voltea y vuelve cada resultado una variable
+colnames(estimadores_en_df) <- c('estimador_1', 'estimador_2', 'estimador_3', 'estimador_4')
+
+estimadores_en_df
+```
+
+*Distribución de los datos en un boxplot*
+
+```{r}
+boxplot(estimadores_en_df, las=1, main="Comparacion estimadores con n=1000") 
+abline(h=1,  col="red")   
+```
+
+*Media y desviación estándar de los estimadores*
+
+```{r}
+#Media
+medias <- apply(estimadores_en_df,2,mean) 
+
+print(medias)
+
+#Grafiquito medias
+barplot(medias, 
+        main = "Media de Estimadores", 
+        xlab = "Estimadores", 
+        ylab = "Media", 
+        col = "#00B4E3",
+        names.arg = colnames(estimadores_en_df))
+
+
+#Desviación estándar
+devest <- apply(estimadores_en_df,2,sd) 
+
+print(devest)
+
+barplot(devest, 
+        main = "Desviación Estándar de Estimadores", 
+        xlab = "Estimadores", 
+        ylab = "Desviación Estándar", 
+        col = "#00B288",
+        names.arg = colnames(estimadores_en_df))
+```
+
+<p>
+
+Sobre el sesgo vamos a comparar la diferencia entre el valor esperado del estimador theta y el valor verdadero del parámetro, se selecciona el valor de 1 como el valor que debería tomar los estimadores
+
+$B(\hat{\theta}) = E(\hat{\theta}) - \theta$
+
+A continuación, se mira la diferencia (o sesgo) para cada grupo de medias.
+
+</p>
+
+```{r}
+medias <- apply(estimadores_en_df, 2, mean)
+# El valor del parámetro es 1
+theta <- 1
+
+# Calculamos el sesgo para cada estimador
+sesgos <- medias - theta
+
+# Ahora graficamos los sesgos en una gráfica de barras
+plotsesgos <- barplot(sesgos, 
+        main = "Sesgo de Estimadores", 
+        xlab = "Estimadores", 
+        ylab = "Sesgo", 
+        col = "blue",
+        names.arg = c("Estimador 1", "Estimador 2", "Estimador 3", "Estimador 4"))
+
+
+# Agregar etiquetas 
+text(x = plotsesgos, y = sesgos, label = round(sesgos, 2), pos = 3, cex = 0.8, col = "red")
+```
+
+<p>
+Se identifica que el estimador 3 y estimador 1 son los que presentan resultados de mínima varianza de los cuatro, más eficientes, conforme se incrementan las simulaciones tiende al valor del estimado (son consistentes) y son los que muestran menor sesgo puesto que su valor esperado es el que más se acerca al real.
+
+**Fin del documento**
+<p><center><img src="https://media.giphy.com/media/mZj33ESTYZrYalsoon/giphy.gif" alt="dibujar" style="width:25%;"></center></p>

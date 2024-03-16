@@ -1,0 +1,887 @@
+---
+title: "Métodos y simulación estadística Actividad 2 - Caso Teorema del límite central: Ejercicio 3"
+author: "David Aguilar y Christian Bermúdez."
+date: "10/03/2024"
+
+output:
+  html_document:
+    toc: yes
+    toc_depth: 3
+    toc_float: yes
+    number_sections: yes
+    df_print: paged
+    highlight: pygments
+    theme: readable
+  pdf_document:
+    toc: yes
+    toc_depth: '3'
+always_allow_html: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+#definir directorio
+setwd("C:/Users/doar9/OneDrive/Javeriana/Metodos") 
+```
+**Nota: Documento académico para la Maestría en ciencia de datos de la Universidad Javeriana de Cali**
+
+
+Según lo mencionado en el material del curso, el Teorema Central del Límite establece que, dada una muestra suficientemente grande de una población con una media y varianza finitas, la distribución de las medias muestrales tiende a ser normal, independientemente de la forma de la distribución de la población. Con este ejercicio, se presenta una forma de darle aplicabilidad a este teorema mediante una simulación: 
+
+
+
+
+# Punto A
+<p style="font-family: Tahoma; color: #00B288; font-weight: bold;">
+  Realice una simulación en la cual genere una población de n = 1000 (Lote), donde el porcentaje de individuos (supongamos plantas) enfermas sea del 50%.
+</p>
+
+<p style="font-family: Tahoma; color: #000000; font-weight: bold;">
+  Respuesta:
+</p>
+
+<p style="font-family: Tahoma; color: #000000;">
+ Se utiliza el comando rbinom para una distribución binomial con probabilidad de 50%, se hace solo una simulación para 1000 plantas.
+</p>
+
+
+
+```{r}
+# Primero definimos el tamaño de la población o lote
+n = 1000
+
+# Simulamos la población de plantas con un 50% de probabilidad de estar enfermas
+X = rbinom(n, size = 1, prob = 0.5)
+
+
+# graficamos la distribución usando la librería ggplot2
+library(ggplot2)
+
+
+# convertimos los datos en un data frame
+graficopunto1 <- data.frame(Resultado_planta = factor(X, labels = c("Sana", "Enferma")))
+
+# creamos el gráfico con ggplot
+ggplot(graficopunto1, aes(x = Resultado_planta)) +
+  geom_bar(fill = "#00B288", color = "#DCD5CB") +
+  geom_text(stat = 'count',  aes(label = after_stat(count)), vjust = -0.5) +
+  labs(title = "Distribucion del estado de salud de las plantas simuladas",
+       x = "Estado de las plantas",
+       y = "Frecuencia") +
+  theme_minimal()
+
+```
+
+
+# Punto B
+<p style="font-family: Tahoma; color: #00B288; font-weight: bold;">
+  Genere una función que permita:
+</p>
+
+<ul>
+  <li>Obtener una muestra aleatoria de la población y</li>
+  <li>Calcule el estimador de la proporción muestral \( \hat{p} \) para un tamaño de muestra dado \( n \)</li>
+</ul>
+
+<p style="font-family: Tahoma; color: #000000; font-weight: bold;">
+  Respuesta:
+</p>
+
+
+
+<p style="font-family: Tahoma; color: #000000;">
+El estimador es \( \hat{p} = \frac{1}{n} \sum_{i=1}^{n} X_i \), donde \( X_i \) es igual a 1 si es una planta enferma. 
+Este estimador es igual al promedio de cada una de las distribuciones, porque se suma el total de los datos y se divide en el número total de datos.
+
+A continuación, se muestra el cóigo de generación de la función y el resultado para una muestra aleatorio de tamaño \( n \):</p>
+
+
+
+```{r}
+# Definimos la función para calcular el estimador de la proporción de plantas enfermas
+calcular_proporcion_enfermos <- function(n) {
+  # Obtenemos una muestra aleatoria de la población, como lo hicimos en el literal anterior
+  muestra <- rbinom(n, size = 1, prob = 0.5)
+  
+  # Calculamos la proporción de plantas enfermas en la muestra (dividimos la suma de enfermos por el total de la muestra)
+  proporcion_enfermos <- sum(muestra) / n
+  
+
+  
+  # cierre del código para garantizar que se retorna la proporción de plantas enfermas
+  return(proporcion_enfermos)
+}
+
+# Ejemplo de uso. como el del caso anterior para un tamaño de muestra n = 1000
+n = 1000
+proporcion_enfermos <- calcular_proporcion_enfermos(n)
+
+
+```
+```{r}
+    # Imprimimos la proporción de plantas enfermas
+  print(proporcion_enfermos)
+```
+
+
+# Punto C
+<p style="font-family: Tahoma; color: #00B288; font-weight: bold;">
+Repita el escenario anterior (b) n=500 veces y analice los resultados en cuanto al comportamiento de los 500 resultados del estimador ¿Qué tan simétricos o sesgados son los resultados obtenidos? y ¿qué se puede observar en cuanto a la variabilidad?. Realice en su informe un comentario sobre los resultados obtenidos.
+</p>
+
+<p style="font-family: Tahoma; color: #000000; font-weight: bold;">
+  Respuesta:
+</p>
+
+<p style="font-family: Tahoma; color: #000000;">
+ Se utiliza el comando sapply() para repetir lo realizado previamente con la función:
+</p>
+
+```{r}
+# Aplicamos la función que creamos calcular_proporcion_enfermos(n) 500 veces como nos lo piden con sapply()
+tamaños_muestra = rep(1000, 500) # Repite el tamaño de muestra n = 1000, 500 veces
+proporciones_enfermos = sapply(tamaños_muestra, calcular_proporcion_enfermos)
+
+
+
+
+
+```
+
+Revisamos las estadisticas descriptivas de los 500 datos de proporciones (medias) que encontramos y vemos que el promedio del estimador es de 0.5 y su mediana también, lo que indica que el estimador tiende a la media que es que el 50% de las plantas enfermas.
+
+```{r}
+# Usamos la librería psych
+library(psych)
+
+# Usamos describe() para obtener las estadísticas descriptivas de proporciones_enfermos
+describe(proporciones_enfermos)
+
+```
+
+
+
+Prcedemos a ver en un histograma la distribución de los estimadores en la simulación realizada 500 veces e identificar cómo tiende a una distribución normal.
+
+```{r}
+# Creamos un histograma de las proporciones de plantas enfermas
+hist(proporciones_enfermos, main = "Histograma de Proporciones de Plantas Enfermas", xlab = "Proporcion de Enfermos", ylab = "Frecuencia", breaks = 30)
+```
+
+Revisamos qué tanto se ajusta a la distribución normaly encontramos que las distribuciones de las medias tienden a uan normal.
+
+```{r}
+# Generamos el gráfico QQ para las proporciones de plantas enfermas
+qqnorm(proporciones_enfermos)
+qqline(proporciones_enfermos, col="red")
+
+```
+
+
+Creamos un boxplot para ver la variabilidad de los datos y se identfica que los datos no se encuentran distribuidos hacia alguna cola específica y que no tiende haber sesgo en la estimación.
+
+```{r}
+# Creamos un boxplot de las proporciones de plantas enfermas
+boxplot(proporciones_enfermos, main = "Boxplot de Proporciones de Plantas Enfermas", ylab = "Proporcion de Enfermos", horizontal = FALSE, col = "#49C3B1")
+
+```
+
+
+
+# punto D
+
+<p style="font-family: Tahoma; color: #00B288; font-weight: bold;">
+  Repita los puntos b y c para tamaños de muestra n=5, 10 15,  20,  30,  50,  60,  100,  200,  500. Compare los resultados obtenidos para los diferentes tamaños de muestra en cuanto a la normalidad. Utilice pruebas de bondad y ajuste (shapiro wilks :shspiro.test()) y métodos gráficos (gráfico de normalidad: qqnorm()). Comente en su informe los resultados obtenidos.
+</p>
+
+<p style="font-family: Tahoma; color: #000000; font-weight: bold;">
+  Respuesta:
+</p>
+
+<p>
+Revisamos las distribuciones de la media (el estimador) para cada número de n y vemos cómo se aproxima a la distribución normal.
+</p>
+
+```{r}
+par(cex=0.5, cex.axis=.5, cex.lab=.5, cex.main=.5, cex.sub=.5,  mfrow=c(3,2), mai = c(.5, .5, .5, .5))
+# Teorema Central del Límite-----------------------------
+# Paso 1
+n=500   #  numero de columnas (tamaño máximo de muestra)
+m=1000*n
+# Caso --------------------------------------------------
+# distribución binomial-------------------------------
+X = matrix(rbinom(m, size = 1, prob = 0.5), ncol = n)
+ #############################
+# Paso 2
+# generación de muestras--------------------------------
+
+X5=X[ ,1:5]          # n=5
+X10=X[ ,1:10]          # n=10
+X15=X[ ,1:15]        # n=15
+X20=X[ ,1:20]        # n=20
+X30=X[ ,1:30]        # n=30
+X50=X[ ,1:50]        # n=50
+X60=X[ ,1:60]      # n=60
+X100=X[ ,1:100]    # n=100
+X200=X[ ,1:200]    # n=200
+X500=X[ ,1:500]    # n=500
+# Paso 3
+# generacion de medias-------------------------------------------
+Mx5=apply(X5,1,mean)        # medias de muestras de tamaño n=5
+Mx10 = apply(X10, 1, mean)  # medias de muestras de tamaño n=10
+Mx15 = apply(X15, 1, mean)  # medias de muestras de tamaño n=15
+Mx20 = apply(X20, 1, mean)  # medias de muestras de tamaño n=20
+Mx30 = apply(X30, 1, mean)  # medias de muestras de tamaño n=30
+Mx50 = apply(X50, 1, mean)  # medias de muestras de tamaño n=50
+Mx60 = apply(X60, 1, mean)  # medias de muestras de tamaño n=60
+Mx100 = apply(X100, 1, mean) # medias de muestras de tamaño n=100
+Mx200 = apply(X200, 1, mean) # medias de muestras de tamaño n=200
+Mx500 = apply(X500, 1, mean) # medias de muestras de tamaño n=500
+# Paso 4 
+# generación de densidad empírica -------------------------------
+d5 = density(Mx5)
+d10 = density(Mx10)
+d15 = density(Mx15)
+d20 = density(Mx20)
+d30 = density(Mx30)
+d50 = density(Mx50)
+d60 = density(Mx60)
+d100 = density(Mx100)
+d200 = density(Mx200)
+d500 = density(Mx500)
+
+# Gráficos de densidad -------------------------------------------
+# configuración de las gráficas
+par(cex=0.5, cex.axis=.5, cex.lab=.5, cex.main=.5, cex.sub=.5,  mfrow=c(2,3), mai = c(.5, .5, .5, .5))
+# histogramas  de comparacion-------------------------------------
+plot(d5, main=" ", xlab = "n=5")
+plot(d10, main=" ", xlab = "n=10")
+plot(d15, main=" ", xlab = "n=15")
+plot(d20, main=" ", xlab = "n=20")
+plot(d30, main=" ", xlab = "n=30")
+plot(d50, main=" ", xlab = "n=50")
+plot(d60, main=" ", xlab = "n=60")
+plot(d100, main=" ", xlab = "n=100")
+plot(d200, main=" ", xlab = "n=200")
+plot(d500, main=" ", xlab = "n=500")
+
+
+```
+<p>comparamos los histogramas y comprobamos cómo tiende a la normalidad la distribución de la media, alrededor de 0.5, el valor del parámetro conforme aumenta la muestra.
+</p>
+```{r}
+# histogramas  de comparacion-------------------------------------
+hist(Mx5, main = "n=5", freq = FALSE)
+hist(Mx10, main = "n=10", freq = FALSE)
+hist(Mx15, main = "n=15", freq = FALSE)
+hist(Mx20, main = "n=20", freq = FALSE)
+hist(Mx30, main = "n=30", freq = FALSE)
+hist(Mx50, main = "n=50", freq = FALSE)
+hist(Mx60, main = "n=60", freq = FALSE)
+hist(Mx100, main = "n=100", freq = FALSE)
+hist(Mx200, main = "n=200", freq = FALSE)
+hist(Mx500, main = "n=500", freq = FALSE)
+
+```
+
+
+Vemos también como reduce la varianza de la media por el tamaño de muestra
+```{r warning=FALSE}
+# Calculamos la varianza de las medias para cada conjunto de datos directamente
+varianzas <- c(
+  n5 = var(Mx5),
+  n10 = var(Mx10),
+  n15 = var(Mx15),
+  n20 = var(Mx20),
+  n30 = var(Mx30),
+  n50 = var(Mx50),
+  n60 = var(Mx60),
+  n100 = var(Mx100),
+  n200 = var(Mx200),
+  n500 = var(Mx500)
+)
+
+# Convertimos las varianzas a un data frame para graficar
+var_df <- data.frame(n = as.factor(names(varianzas)), Varianza = varianzas)
+# Aseguramos que 'n' es un factor y especificamos el orden manualmente
+var_df$n <- factor(var_df$n, levels = var_df$n[order(as.numeric(gsub("n=", "", var_df$n)))])
+
+# Ahora, creamos la gráfica con ggplot2
+library(ggplot2)
+ggplot(var_df, aes(x = n, y = Varianza)) +
+  geom_col(fill = "steelblue") +
+  theme_minimal() +
+  labs(title = "Varianza de la Media por Tamano de Muestra",
+       x = "Tamano de Muestra (n)",
+       y = "Varianza de la Media")
+
+
+```
+
+<p>
+Se incluye además un análisis de variabilidad para revisar la dispersión de los datos y se identifica, como se mostró previamente que se reduce la variabilidad de los datos conforme se incrementa la muestra y se corrigen los sesgos que ocurren en valores inferiores.
+
+</p>
+```{r}
+mxmatriz=data.frame(Mx5, Mx10, Mx15, Mx20, Mx30, Mx50, Mx60, Mx100, Mx200, Mx500 )
+
+boxplot(mxmatriz, las=1, main="Comparación estimadores")  # gráfico de comparación   
+abline(h=0.5,  col="red")                                       # línea indicando el parámetro b=20
+```
+
+
+
+<p>
+Se revisan pruebas de normalidad y se encuentra que conforme se aumenta el tamaño de la muestra, la distribución de las medias tiende a no rechazar la hipótesis nula frente a la alterna, a niveles de confianza superiores (mayores a 95% por ejemplo), es decir, tendiendo a no rechazar la normalidad. Lo anterior vuelve a demostrar la demostración del teorema del límite central.
+
+*Hipótesis nula (H0):* La muestra proviene de una población normalmente distribuida. Esto significa que no hay evidencia de que la distribución de los datos se desvíe de una distribución normal.
+
+*Hipótesis alternativa (Ha):* La muestra no proviene de una población normalmente distribuida. Indica que hay evidencia de que la distribución de los datos se desvía de la normalidad.
+</p>
+```{r}
+# n=5
+shapiro.test(Mx5)
+
+# n=10
+shapiro.test(Mx10)
+
+# n=15
+shapiro.test(Mx15)
+
+# n=20
+shapiro.test(Mx20)
+
+# n=30
+shapiro.test(Mx30)
+
+# n=50
+shapiro.test(Mx50)
+
+# n=60
+shapiro.test(Mx60)
+
+# n=100
+shapiro.test(Mx100)
+
+# n=200
+shapiro.test(Mx200)
+
+# n=500
+shapiro.test(Mx500)
+
+
+```
+
+Finalizamos generando el gráfico QQ para las proporciones de plantas enfermas
+
+```{r}
+# n=5
+qqnorm(Mx5)
+qqline(Mx5, col="red")
+
+# n=10
+qqnorm(Mx10)
+qqline(Mx10, col="red")
+
+# n=15
+qqnorm(Mx15)
+qqline(Mx15, col="red")
+
+# n=20
+qqnorm(Mx20)
+qqline(Mx20, col="red")
+
+# n=30
+qqnorm(Mx30)
+qqline(Mx30, col="red")
+
+# n=50
+qqnorm(Mx50)
+qqline(Mx50, col="red")
+
+# n=60
+qqnorm(Mx60)
+qqline(Mx60, col="red")
+
+# n=100
+qqnorm(Mx100)
+qqline(Mx100, col="red")
+
+# n=200
+qqnorm(Mx200)
+qqline(Mx200, col="red")
+
+# n=500
+qqnorm(Mx500)
+qqline(Mx500, col="red")
+
+```
+
+# Punto E
+<p style="font-family: Tahoma; color: #00B288; font-weight: bold;">
+  Repita toda la simulación (puntos a – d), pero ahora para lotes con 10% de plantas enfermas y de nuevo para lotes con un 90% de plantas enfermas. Concluya sobre los resultados del ejercicio..
+</p>
+
+<p style="font-family: Tahoma; color: #000000; font-weight: bold;">
+  Respuesta:
+</p>
+
+## 10 % plantas enfermas
+<p style="font-family: Tahoma; color: #002E58; font-weight: bold;">
+  Lotes con 10% de plantas enfermas.
+</p>
+
+
+
+<p>
+Revisamos las distribuciones de la media (el estimador) para cada número de n y vemos cómo se aproxima a la distribución normal su media, en este caso con el 10% de las plantas enfermas.
+</p>
+
+```{r}
+par(cex=0.5, cex.axis=.5, cex.lab=.5, cex.main=.5, cex.sub=.5,  mfrow=c(3,2), mai = c(.5, .5, .5, .5))
+# Teorema Central del Límite-----------------------------
+# Paso 1
+n=500   #  numero de columnas (tamaño máximo de muestra)
+m=1000*n
+# Caso --------------------------------------------------
+# distribución binomial-------------------------------
+X = matrix(rbinom(m, size = 1, prob = 0.1), ncol = n)
+ #############################
+# Paso 2
+# generación de muestras--------------------------------
+
+X5=X[ ,1:5]          # n=5
+X10=X[ ,1:10]          # n=10
+X15=X[ ,1:15]        # n=15
+X20=X[ ,1:20]        # n=20
+X30=X[ ,1:30]        # n=30
+X50=X[ ,1:50]        # n=50
+X60=X[ ,1:60]      # n=60
+X100=X[ ,1:100]    # n=100
+X200=X[ ,1:200]    # n=200
+X500=X[ ,1:500]    # n=500
+# Paso 3
+# generacion de medias-------------------------------------------
+Mx5=apply(X5,1,mean)        # medias de muestras de tamaño n=5
+Mx10 = apply(X10, 1, mean)  # medias de muestras de tamaño n=10
+Mx15 = apply(X15, 1, mean)  # medias de muestras de tamaño n=15
+Mx20 = apply(X20, 1, mean)  # medias de muestras de tamaño n=20
+Mx30 = apply(X30, 1, mean)  # medias de muestras de tamaño n=30
+Mx50 = apply(X50, 1, mean)  # medias de muestras de tamaño n=50
+Mx60 = apply(X60, 1, mean)  # medias de muestras de tamaño n=60
+Mx100 = apply(X100, 1, mean) # medias de muestras de tamaño n=100
+Mx200 = apply(X200, 1, mean) # medias de muestras de tamaño n=200
+Mx500 = apply(X500, 1, mean) # medias de muestras de tamaño n=500
+# Paso 4 
+# generación de densidad empírica -------------------------------
+d5 = density(Mx5)
+d10 = density(Mx10)
+d15 = density(Mx15)
+d20 = density(Mx20)
+d30 = density(Mx30)
+d50 = density(Mx50)
+d60 = density(Mx60)
+d100 = density(Mx100)
+d200 = density(Mx200)
+d500 = density(Mx500)
+
+# Gráficos de densidad -------------------------------------------
+# configuración de las gráficas
+par(cex=0.5, cex.axis=.5, cex.lab=.5, cex.main=.5, cex.sub=.5,  mfrow=c(2,3), mai = c(.5, .5, .5, .5))
+# histogramas  de comparacion-------------------------------------
+plot(d5, main=" ", xlab = "n=5")
+plot(d10, main=" ", xlab = "n=10")
+plot(d15, main=" ", xlab = "n=15")
+plot(d20, main=" ", xlab = "n=20")
+plot(d30, main=" ", xlab = "n=30")
+plot(d50, main=" ", xlab = "n=50")
+plot(d60, main=" ", xlab = "n=60")
+plot(d100, main=" ", xlab = "n=100")
+plot(d200, main=" ", xlab = "n=200")
+plot(d500, main=" ", xlab = "n=500")
+
+
+```
+<p>comparamos los histogramas y comprobamos cómo tiende a la normalidad la distribución de la media, alrededor de 0.1, el valor del parámetro conforme aumenta la muestra.
+</p>
+```{r}
+# histogramas  de comparacion-------------------------------------
+hist(Mx5, main = "n=5", freq = FALSE)
+hist(Mx10, main = "n=10", freq = FALSE)
+hist(Mx15, main = "n=15", freq = FALSE)
+hist(Mx20, main = "n=20", freq = FALSE)
+hist(Mx30, main = "n=30", freq = FALSE)
+hist(Mx50, main = "n=50", freq = FALSE)
+hist(Mx60, main = "n=60", freq = FALSE)
+hist(Mx100, main = "n=100", freq = FALSE)
+hist(Mx200, main = "n=200", freq = FALSE)
+hist(Mx500, main = "n=500", freq = FALSE)
+
+```
+
+
+Vemos también como reduce la varianza de la media por el tamaño de muestra
+```{r warning=FALSE}
+# Calculamos la varianza de las medias para cada conjunto de datos directamente
+varianzas <- c(
+  n5 = var(Mx5),
+  n10 = var(Mx10),
+  n15 = var(Mx15),
+  n20 = var(Mx20),
+  n30 = var(Mx30),
+  n50 = var(Mx50),
+  n60 = var(Mx60),
+  n100 = var(Mx100),
+  n200 = var(Mx200),
+  n500 = var(Mx500)
+)
+
+# Convertimos las varianzas a un data frame para graficar
+var_df <- data.frame(n = as.factor(names(varianzas)), Varianza = varianzas)
+# Aseguramos que 'n' es un factor y especificamos el orden manualmente
+var_df$n <- factor(var_df$n, levels = var_df$n[order(as.numeric(gsub("n=", "", var_df$n)))])
+
+# Ahora, creamos la gráfica con ggplot2
+library(ggplot2)
+ggplot(var_df, aes(x = n, y = Varianza)) +
+  geom_col(fill = "purple") +
+  theme_minimal() +
+  labs(title = "Varianza de la Media por Tamano de Muestra",
+       x = "Tamano de Muestra (n)",
+       y = "Varianza de la Media")
+
+
+```
+
+<p>
+Como se mostró previamente que se reduce la variabilidad de los datos conforme se incrementa la muestra y se corrigen los sesgos que ocurren en valores inferiores.
+
+</p>
+```{r}
+mxmatriz=data.frame(Mx5, Mx10, Mx15, Mx20, Mx30, Mx50, Mx60, Mx100, Mx200, Mx500 )
+
+boxplot(mxmatriz, las=1, main="Comparación estimadores")  # gráfico de comparación   
+abline(h=0.1,  col="#4E9D2D")                                       # línea indicando el parámetro b=20
+```
+
+
+
+<p>
+Se revisan pruebas de normalidad y se encuentra que conforme se aumenta el tamaño de la muestra, la distribución de las medias tiende a no rechazar la hipótesis nula frente a la alterna, a niveles de confianza superiores (mayores a 95% por ejemplo), es decir, tendiendo a no rechazar la normalidad. Lo anterior vuelve a demostrar la demostración del teorema del límite central.
+
+*Hipótesis nula (H0):* La muestra proviene de una población normalmente distribuida. Esto significa que no hay evidencia de que la distribución de los datos se desvíe de una distribución normal.
+
+*Hipótesis alternativa (Ha):* La muestra no proviene de una población normalmente distribuida. Indica que hay evidencia de que la distribución de los datos se desvía de la normalidad.
+</p>
+```{r}
+# n=5
+shapiro.test(Mx5)
+
+# n=10
+shapiro.test(Mx10)
+
+# n=15
+shapiro.test(Mx15)
+
+# n=20
+shapiro.test(Mx20)
+
+# n=30
+shapiro.test(Mx30)
+
+# n=50
+shapiro.test(Mx50)
+
+# n=60
+shapiro.test(Mx60)
+
+# n=100
+shapiro.test(Mx100)
+
+# n=200
+shapiro.test(Mx200)
+
+# n=500
+shapiro.test(Mx500)
+
+
+```
+
+Finalizamos generando el gráfico QQ para las proporciones de plantas enfermas donde vemos como la distribución conforme aumentan las simulaciones se acerca al valor de una normal, pero centrada en el valor del estimador 10%
+
+```{r}
+# n=5
+qqnorm(Mx5)
+qqline(Mx5, col="#4E9D2D")
+
+# n=10
+qqnorm(Mx10)
+qqline(Mx10, col="#4E9D2D")
+
+# n=15
+qqnorm(Mx15)
+qqline(Mx15, col="#4E9D2D")
+
+# n=20
+qqnorm(Mx20)
+qqline(Mx20, col="#4E9D2D")
+
+# n=30
+qqnorm(Mx30)
+qqline(Mx30, col="#4E9D2D")
+
+# n=50
+qqnorm(Mx50)
+qqline(Mx50, col="#4E9D2D")
+
+# n=60
+qqnorm(Mx60)
+qqline(Mx60, col="#4E9D2D")
+
+# n=100
+qqnorm(Mx100)
+qqline(Mx100, col="#4E9D2D")
+
+# n=200
+qqnorm(Mx200)
+qqline(Mx200, col="#4E9D2D")
+
+# n=500
+qqnorm(Mx500)
+qqline(Mx500, col="#4E9D2D")
+
+```
+
+
+## 90 % plantas enfermas
+<p style="font-family: Tahoma; color: #002E58; font-weight: bold;">
+  Lotes con 90% de plantas enfermas. Se repite todo el ejercicio anterior.
+</p>
+
+
+
+<p>
+Revisamos las distribuciones de la media (el estimador) para cada número de n y vemos cómo se aproxima a la distribución normal su media, en este caso con el 90% de las plantas enfermas.
+</p>
+
+```{r}
+par(cex=0.5, cex.axis=.5, cex.lab=.5, cex.main=.5, cex.sub=.5,  mfrow=c(3,2), mai = c(.5, .5, .5, .5))
+# Teorema Central del Límite-----------------------------
+# Paso 1
+n=500   #  numero de columnas (tamaño máximo de muestra)
+m=1000*n
+# Caso --------------------------------------------------
+# distribución binomial-------------------------------
+X = matrix(rbinom(m, size = 1, prob = 0.9), ncol = n)
+ #############################
+# Paso 2
+# generación de muestras--------------------------------
+
+X5=X[ ,1:5]          # n=5
+X10=X[ ,1:10]          # n=10
+X15=X[ ,1:15]        # n=15
+X20=X[ ,1:20]        # n=20
+X30=X[ ,1:30]        # n=30
+X50=X[ ,1:50]        # n=50
+X60=X[ ,1:60]      # n=60
+X100=X[ ,1:100]    # n=100
+X200=X[ ,1:200]    # n=200
+X500=X[ ,1:500]    # n=500
+# Paso 3
+# generacion de medias-------------------------------------------
+Mx5=apply(X5,1,mean)        # medias de muestras de tamaño n=5
+Mx10 = apply(X10, 1, mean)  # medias de muestras de tamaño n=10
+Mx15 = apply(X15, 1, mean)  # medias de muestras de tamaño n=15
+Mx20 = apply(X20, 1, mean)  # medias de muestras de tamaño n=20
+Mx30 = apply(X30, 1, mean)  # medias de muestras de tamaño n=30
+Mx50 = apply(X50, 1, mean)  # medias de muestras de tamaño n=50
+Mx60 = apply(X60, 1, mean)  # medias de muestras de tamaño n=60
+Mx100 = apply(X100, 1, mean) # medias de muestras de tamaño n=100
+Mx200 = apply(X200, 1, mean) # medias de muestras de tamaño n=200
+Mx500 = apply(X500, 1, mean) # medias de muestras de tamaño n=500
+# Paso 4 
+# generación de densidad empírica -------------------------------
+d5 = density(Mx5)
+d10 = density(Mx10)
+d15 = density(Mx15)
+d20 = density(Mx20)
+d30 = density(Mx30)
+d50 = density(Mx50)
+d60 = density(Mx60)
+d100 = density(Mx100)
+d200 = density(Mx200)
+d500 = density(Mx500)
+
+# Gráficos de densidad -------------------------------------------
+# configuración de las gráficas
+par(cex=0.5, cex.axis=.5, cex.lab=.5, cex.main=.5, cex.sub=.5,  mfrow=c(2,3), mai = c(.5, .5, .5, .5))
+# histogramas  de comparacion-------------------------------------
+plot(d5, main=" ", xlab = "n=5")
+plot(d10, main=" ", xlab = "n=10")
+plot(d15, main=" ", xlab = "n=15")
+plot(d20, main=" ", xlab = "n=20")
+plot(d30, main=" ", xlab = "n=30")
+plot(d50, main=" ", xlab = "n=50")
+plot(d60, main=" ", xlab = "n=60")
+plot(d100, main=" ", xlab = "n=100")
+plot(d200, main=" ", xlab = "n=200")
+plot(d500, main=" ", xlab = "n=500")
+
+
+```
+<p>comparamos los histogramas y comprobamos cómo tiende a la normalidad la distribución de la media, alrededor de 0.9, el valor del parámetro conforme aumenta la muestra.
+</p>
+```{r}
+# histogramas  de comparacion-------------------------------------
+hist(Mx5, main = "n=5", freq = FALSE)
+hist(Mx10, main = "n=10", freq = FALSE)
+hist(Mx15, main = "n=15", freq = FALSE)
+hist(Mx20, main = "n=20", freq = FALSE)
+hist(Mx30, main = "n=30", freq = FALSE)
+hist(Mx50, main = "n=50", freq = FALSE)
+hist(Mx60, main = "n=60", freq = FALSE)
+hist(Mx100, main = "n=100", freq = FALSE)
+hist(Mx200, main = "n=200", freq = FALSE)
+hist(Mx500, main = "n=500", freq = FALSE)
+
+```
+
+
+Vemos también como reduce la varianza de la media por el tamaño de muestra
+```{r warning=FALSE}
+# Calculamos la varianza de las medias para cada conjunto de datos directamente
+varianzas <- c(
+  n5 = var(Mx5),
+  n10 = var(Mx10),
+  n15 = var(Mx15),
+  n20 = var(Mx20),
+  n30 = var(Mx30),
+  n50 = var(Mx50),
+  n60 = var(Mx60),
+  n100 = var(Mx100),
+  n200 = var(Mx200),
+  n500 = var(Mx500)
+)
+
+# Convertimos las varianzas a un data frame para graficar
+var_df <- data.frame(n = as.factor(names(varianzas)), Varianza = varianzas)
+# Aseguramos que 'n' es un factor y especificamos el orden manualmente
+var_df$n <- factor(var_df$n, levels = var_df$n[order(as.numeric(gsub("n=", "", var_df$n)))])
+
+# Ahora, creamos la gráfica con ggplot2
+library(ggplot2)
+ggplot(var_df, aes(x = n, y = Varianza)) +
+  geom_col(fill = "orange") +
+  theme_minimal() +
+  labs(title = "Varianza de la Media por Tamano de Muestra",
+       x = "Tamano de Muestra (n)",
+       y = "Varianza de la Media")
+
+
+```
+
+<p>
+Como se mostró previamente que se reduce la variabilidad de los datos conforme se incrementa la muestra y se corrigen los sesgos que ocurren en valores inferiores.
+
+</p>
+```{r}
+mxmatriz=data.frame(Mx5, Mx10, Mx15, Mx20, Mx30, Mx50, Mx60, Mx100, Mx200, Mx500 )
+
+boxplot(mxmatriz, las=1, main="Comparación estimadores")  # gráfico de comparación   
+abline(h=0.9,  col="#49C3B1")                                       # línea indicando el parámetro b=20
+```
+
+
+
+<p>
+Se revisan pruebas de normalidad y se encuentra que conforme se aumenta el tamaño de la muestra, la distribución de las medias tiende a no rechazar la hipótesis nula frente a la alterna, a niveles de confianza superiores (mayores a 95% por ejemplo), es decir, tendiendo a no rechazar la normalidad. Lo anterior vuelve a demostrar la demostración del teorema del límite central.
+
+*Hipótesis nula (H0):* La muestra proviene de una población normalmente distribuida. Esto significa que no hay evidencia de que la distribución de los datos se desvíe de una distribución normal.
+
+*Hipótesis alternativa (Ha):* La muestra no proviene de una población normalmente distribuida. Indica que hay evidencia de que la distribución de los datos se desvía de la normalidad.
+</p>
+```{r}
+# n=5
+shapiro.test(Mx5)
+
+# n=10
+shapiro.test(Mx10)
+
+# n=15
+shapiro.test(Mx15)
+
+# n=20
+shapiro.test(Mx20)
+
+# n=30
+shapiro.test(Mx30)
+
+# n=50
+shapiro.test(Mx50)
+
+# n=60
+shapiro.test(Mx60)
+
+# n=100
+shapiro.test(Mx100)
+
+# n=200
+shapiro.test(Mx200)
+
+# n=500
+shapiro.test(Mx500)
+
+
+```
+
+Finalizamos generando el gráfico QQ para las proporciones de plantas enfermas donde vemos como la distribución conforme aumentan las simulaciones se acerca al valor de una normal, pero centrada en el valor del estimador 90%
+
+```{r}
+# n=5
+qqnorm(Mx5)
+qqline(Mx5, col="#49C3B1")
+
+# n=10
+qqnorm(Mx10)
+qqline(Mx10, col="#49C3B1")
+
+# n=15
+qqnorm(Mx15)
+qqline(Mx15, col="#49C3B1")
+
+# n=20
+qqnorm(Mx20)
+qqline(Mx20, col="#49C3B1")
+
+# n=30
+qqnorm(Mx30)
+qqline(Mx30, col="#49C3B1")
+
+# n=50
+qqnorm(Mx50)
+qqline(Mx50, col="#49C3B1")
+
+# n=60
+qqnorm(Mx60)
+qqline(Mx60, col="#49C3B1")
+
+# n=100
+qqnorm(Mx100)
+qqline(Mx100, col="#49C3B1")
+
+# n=200
+qqnorm(Mx200)
+qqline(Mx200, col="#49C3B1")
+
+# n=500
+qqnorm(Mx500)
+qqline(Mx500, col="#49C3B1")
+
+```
+
+<p>
+Se identifica que para la distribución binomial cuando el parámetro de la probabilidad de éxito (plantas enfermas) es 50% o 10% o 90%. conforme el tamaño de la muestra se incrementa, el estimador que es la media, tiende a ese valor, lo que identifica a la proporción de casos de éxito (promedio) como un estimador consistente porque converge en probabilidad al valor real del parámetro que está estimando. Además, es insesgado (y ese sesgo se va reduciendo, quitando la inclinación hacia un lado u otro de la distribución nomrla que se ve en los casos de 90% y 10%) porque los resultados tienden al valor del promedio, así como eficiente porque el valor de la varianza se reduce. Lo anterior, de acuerdo a lo mencionado en el teorema del líite central.
+
+**Fin del documento**
+<p><center><img src="https://media.giphy.com/media/mZj33ESTYZrYalsoon/giphy.gif" alt="dibujar" style="width:25%;"></center></p>
+
